@@ -1,0 +1,25 @@
+import { MigrationInterface, QueryRunner } from 'typeorm'
+
+export class seed1628965072860 implements MigrationInterface {
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    const sql = `
+        INSERT INTO "TB_CURRENT_ACCOUNT" values (gen_random_uuid(), now(),'0005', 0, null);
+        INSERT INTO "TB_USER" VALUES (gen_random_uuid(), now(), 'admin', 'admin', null);
+        UPDATE "TB_CURRENT_ACCOUNT" SET "userId" = (select "ID" from "TB_USER" WHERE "DS_USERNAME"='admin') WHERE "DS_AGENCY"='0005';
+        UPDATE "TB_USER" SET "currentAccountId" = (select "ID" from "TB_CURRENT_ACCOUNT" WHERE "DS_AGENCY"='0005') WHERE "DS_USERNAME"='admin';`
+
+    queryRunner.query(sql)
+  }
+
+  public async down(queryRunner: QueryRunner): Promise<void> {
+
+    const sql = `
+        UPDATE "TB_CURRENT_ACCOUNT" SET "userId"=null WHERE "DS_AGENCY"='0005';
+        UPDATE "TB_USER" SET "currentAccountId"=null WHERE "DS_USERNAME"='admin';
+        DELETE FROM "TB_CURRENT_ACCOUNT" WHERE "DS_AGENCY"='0005';
+        DELETE FROM "TB_USER" WHERE "DS_USERNAME"='admin';
+    `
+    queryRunner.query(sql)
+
+  }
+}
